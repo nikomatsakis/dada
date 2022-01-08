@@ -260,7 +260,12 @@ impl Cursor {
                     .collect::<Option<Vec<_>>>()
                 {
                     assert_eq!(values.len(), exprs.len());
-                    self.push_assignment(brewery, target, bir::ExprData::Tuple(values), origin);
+                    if values.len() == 0 {
+                        self.push_assignment(brewery, target, bir::ExprData::Unit, origin);
+                    } else {
+                        assert_ne!(values.len(), 1);
+                        self.push_assignment(brewery, target, bir::ExprData::Tuple(values), origin);
+                    }
                 }
             }
 

@@ -1,0 +1,5 @@
+class Foo(arg)
+
+async fn main() {
+    Foo(arg: 10)
+}
