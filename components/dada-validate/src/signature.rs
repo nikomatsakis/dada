@@ -6,11 +6,12 @@ use dada_ir::code::syntax::{self, LocalVariableDeclData, Signature};
 use dada_ir::diagnostic::ErrorReported;
 use dada_ir::error;
 use dada_ir::function::{Function, FunctionSignature};
+use dada_ir::origin_table::HasOriginIn;
 use dada_ir::signature::{
     self, ClassStructure, Field, GenericParameter, GenericParameterKind, KnownPermissionKind,
     ParameterIndex, Permission,
 };
-use dada_ir::span::Anchored;
+use dada_ir::span::{Anchored, Span};
 use dada_ir::storage::Atomic;
 use dada_ir::word::Words;
 use derive_new::new;
@@ -70,20 +71,21 @@ pub(crate) fn validate_function_signature(
             output: None,
         },
 
-        FunctionSignature::Syntax(s) => signature(db, &function, s),
+        FunctionSignature::Syntax(s) => signature(db, &function, s, true),
     }
 }
 
 #[salsa::tracked(return_ref)]
 pub(crate) fn validate_class_signature(db: &dyn crate::Db, class: Class) -> signature::Signature {
     let s = class.signature_syntax(db);
-    signature(db, &class, s)
+    signature(db, &class, s, false)
 }
 
 fn signature(
     db: &dyn crate::Db,
     anchor: &dyn Anchored,
     signature: &syntax::Signature,
+    permit_implicit_generics: bool,
 ) -> signature::Signature {
     let Signature { tables, spans, .. } = signature;
 
@@ -94,7 +96,16 @@ fn signature(
     // assemble the name resolution scope; it should include the parameters
     // as local variables
     let scope = Scope::root(db, root_definitions);
-    let validator = SignatureValidator::new(db, anchor, tables, spans, scope, vec![], vec![]);
+    let validator = SignatureValidator::new(
+        db,
+        anchor,
+        tables,
+        spans,
+        scope,
+        vec![],
+        vec![],
+        permit_implicit_generics,
+    );
     validator.validate_signature(signature)
 }
 
@@ -107,6 +118,7 @@ struct SignatureValidator<'s> {
     scope: Scope<'s, ()>,
     generic_parameters: Vec<signature::GenericParameter>,
     where_clauses: Vec<signature::WhereClause>,
+    permit_implicit_generics: bool,
 }
 
 impl SignatureValidator<'_> {
@@ -147,7 +159,10 @@ impl SignatureValidator<'_> {
     fn validate_ty(&mut self, ty: syntax::Ty) -> signature::Ty {
         let syntax::TyData { perm, path } = ty.data(self.tables);
 
-        match (self.validate_opt_perm(*perm), self.validate_ty_path(*path)) {
+        match (
+            self.validate_opt_perm(ty, *perm),
+            self.validate_ty_path(*path),
+        ) {
             (Ok(permission), Ok(class)) => signature::Ty::Class(signature::ClassTy {
                 permission,
                 class,
@@ -189,10 +204,11 @@ impl SignatureValidator<'_> {
 
     fn validate_opt_perm(
         &mut self,
+        ty: syntax::Ty,
         perm: Option<syntax::Perm>,
     ) -> Result<Permission, ErrorReported> {
         let Some(perm) = perm else {
-            return Ok(self.add_generic_permission(KnownPermissionKind::Given));
+            return self.add_generic_permission(ty, KnownPermissionKind::Given);
         };
 
         match perm.data(self.tables) {
@@ -209,14 +225,14 @@ impl SignatureValidator<'_> {
             // If user writes `shared String` or `leased String`, we convert
             // that to `P String` where `shared P` or `leased P`.
             syntax::PermData::Shared(None) => {
-                Ok(self.add_generic_permission(KnownPermissionKind::Shared))
+                self.add_generic_permission(perm, KnownPermissionKind::Shared)
             }
             syntax::PermData::Leased(None) => {
-                Ok(self.add_generic_permission(KnownPermissionKind::Leased))
+                self.add_generic_permission(perm, KnownPermissionKind::Leased)
             }
             syntax::PermData::Given(None) => {
                 // FIXME: should `given String` be synonymous with `my String`?
-                Ok(self.add_generic_permission(KnownPermissionKind::Given))
+                self.add_generic_permission(perm, KnownPermissionKind::Given)
             }
 
             // Otherwise, if they wrote `shared{..}` or `leased{..}`, convert the paths
@@ -250,19 +266,31 @@ impl SignatureValidator<'_> {
 
     /// Add a new generic permission `P` and return a reference to it.
     /// Based on the `kind`, we may also add a where-clause like `P: shared` or `P: leased`.
-    fn add_generic_permission(&mut self, kind: signature::KnownPermissionKind) -> Permission {
-        let index = ParameterIndex::from(self.generic_parameters.len());
-        let param = GenericParameter::new(GenericParameterKind::Permission, None, index);
-        self.generic_parameters.push(param);
+    fn add_generic_permission(
+        &mut self,
+        error_location: impl HasOriginIn<syntax::Spans, Origin = Span>,
+        kind: signature::KnownPermissionKind,
+    ) -> Result<Permission, ErrorReported> {
+        if !self.permit_implicit_generics {
+            Err(error!(
+                self.spans[error_location].anchor_to(self.db, self.anchor),
+                "class fields must use `my`, `our`, or a generic permission variable"
+            )
+            .emit(self.db))
+        } else {
+            let index = ParameterIndex::from(self.generic_parameters.len());
+            let param = GenericParameter::new(GenericParameterKind::Permission, None, index);
+            self.generic_parameters.push(param);
 
-        let new_where_clause = match kind {
-            KnownPermissionKind::Given => None,
-            KnownPermissionKind::Shared => Some(signature::WhereClause::IsShared(index)),
-            KnownPermissionKind::Leased => Some(signature::WhereClause::IsLeased(index)),
-        };
-        self.where_clauses.extend(new_where_clause);
+            let new_where_clause = match kind {
+                KnownPermissionKind::Given => None,
+                KnownPermissionKind::Shared => Some(signature::WhereClause::IsShared(index)),
+                KnownPermissionKind::Leased => Some(signature::WhereClause::IsLeased(index)),
+            };
+            self.where_clauses.extend(new_where_clause);
 
-        Permission::Parameter(index)
+            Ok(Permission::Parameter(index))
+        }
     }
 
     fn validate_permission_paths(

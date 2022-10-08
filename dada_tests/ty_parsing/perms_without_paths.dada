@@ -3,5 +3,5 @@ class Value(n)
 # Without paths
 class List1(v: my Value)
 class List2(v: our Value)
-class List3(v: shared Value)
-class List4(v: leased Value)
+class List3(v: shared Value) #! ERROR class fields must use `my`, `our`, or a generic permission variable
+class List4(v: leased Value) #! ERROR class fields must use `my`, `our`, or a generic permission variable

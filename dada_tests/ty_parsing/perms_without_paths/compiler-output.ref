@@ -1,0 +1,14 @@
+Error: class fields must use `my`, `our`, or a generic permission variable
+   ╭─[dada_tests/ty_parsing/perms_without_paths.dada:7:16]
+   │
+ 7 │ class List4(v: leased Value) #! ERROR class fields must use `my`, `our`, or a generic permission variable
+   ·                ───┬──  
+   ·                   ╰──── here
+───╯
+Error: class fields must use `my`, `our`, or a generic permission variable
+   ╭─[dada_tests/ty_parsing/perms_without_paths.dada:6:16]
+   │
+ 6 │ class List3(v: shared Value) #! ERROR class fields must use `my`, `our`, or a generic permission variable
+   ·                ───┬──  
+   ·                   ╰──── here
+───╯
