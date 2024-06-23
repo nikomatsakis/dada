@@ -13,7 +13,7 @@ use crate::{
 
 #[salsa::tracked]
 #[customize(DebugWithDb)]
-pub struct Function {
+pub struct Function<'db> {
     #[id]
     pub name: Word,
 
@@ -113,7 +113,7 @@ impl<Db: ?Sized + crate::Db> salsa::DebugWithDb<Db> for Function {
 }
 
 #[salsa::tracked]
-pub struct Variable {
+pub struct Variable<'db> {
     #[id]
     name: Word,
 }

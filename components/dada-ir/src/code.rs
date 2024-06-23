@@ -6,13 +6,13 @@ use crate::{input_file::InputFile, token_tree::TokenTree};
 /// * use the `ast` method from the `dada_parse` prelude to
 ///   parse it into an `Ast`.
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
-pub struct UnparsedCode {
+pub struct UnparsedCode<'db> {
     /// Tokens for the body (parsed when we generate the syntax tree).
-    pub body_tokens: TokenTree,
+    pub body_tokens: TokenTree<'db>,
 }
 
-impl UnparsedCode {
-    pub fn new(body_tokens: TokenTree) -> Self {
+impl<'db> UnparsedCode<'db> {
+    pub fn new(body_tokens: TokenTree<'db>) -> Self {
         Self { body_tokens }
     }
 
@@ -21,7 +21,7 @@ impl UnparsedCode {
     }
 }
 
-impl<Db: ?Sized + crate::Db> salsa::DebugWithDb<Db> for UnparsedCode {
+impl<'db, Db: ?Sized + crate::Db> salsa::DebugWithDb<Db> for UnparsedCode<'db> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>, db: &Db) -> std::fmt::Result {
         f.debug_struct("Code")
             .field("body_tokens", &self.body_tokens.debug(db))

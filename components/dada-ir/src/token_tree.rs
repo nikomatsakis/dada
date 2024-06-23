@@ -6,7 +6,7 @@ use crate::{
 
 #[salsa::tracked]
 #[customize(DebugWithDb)]
-pub struct TokenTree {
+pub struct TokenTree<'db> {
     pub input_file: InputFile,
     pub span: Span,
     #[return_ref]

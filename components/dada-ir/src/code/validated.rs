@@ -14,7 +14,7 @@ use super::syntax;
 /// The "validated" form of a particular [syntax tree](`crate::code::syntax::Tree`).
 #[salsa::tracked]
 #[customize(DebugWithDb)]
-pub struct Tree {
+pub struct Tree<'db> {
     /// The function that this tree is associated with.
     pub function: Function,
 

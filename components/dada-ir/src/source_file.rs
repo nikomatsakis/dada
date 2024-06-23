@@ -5,7 +5,7 @@ use crate::{input_file::InputFile, item::Item};
 /// The result of parsing an input file like `foo.dada`, or the
 /// value from the playground. A program is a collection of files.
 #[customize(DebugWithDb)]
-pub struct SourceFile {
+pub struct SourceFile<'db> {
     #[id]
     pub input_file: InputFile,
 

@@ -3,7 +3,7 @@ use salsa::DebugWithDb;
 #[salsa::interned]
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[customize(DebugWithDb)]
-pub struct Word {
+pub struct Word<'db> {
     #[return_ref]
     pub string: String,
 }
@@ -36,7 +36,7 @@ impl DebugWithDb<dyn crate::Db + '_> for Word {
 #[salsa::interned]
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[customize(DebugWithDb)]
-pub struct Words {
+pub struct Words<'db> {
     #[return_ref]
     pub elements: Vec<Word>,
 }

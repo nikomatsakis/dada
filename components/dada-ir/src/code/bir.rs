@@ -23,15 +23,15 @@ use super::{syntax, validated};
 
 #[salsa::tracked]
 #[customize(DebugWithDb)]
-pub struct Bir {
+pub struct Bir<'db> {
     /// Name of file containing the code from which this Bir was created.
     pub input_file: InputFile,
 
     /// Name of function containing the code from which this Bir was created.
-    pub function_name: Word,
+    pub function_name: Word<'db>,
 
     /// Syntax tree from which this Bir was created.
-    pub syntax_tree: syntax::Tree,
+    pub syntax_tree: syntax::Tree<'db>,
 
     /// The BIR bir
     #[return_ref]
@@ -42,26 +42,26 @@ pub struct Bir {
     pub origins: Origins,
 }
 
-impl Anchored for Bir {
+impl<'db> Anchored for Bir<'db> {
     fn input_file(&self, db: &dyn crate::Db) -> InputFile {
         Bir::input_file(*self, db)
     }
 }
 
-impl DebugWithDb<dyn crate::Db + '_> for Bir {
+impl<'db> DebugWithDb<dyn crate::Db + '_> for Bir<'db> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>, db: &dyn crate::Db) -> std::fmt::Result {
         let self_in_ir_db = &self.in_ir_db(db.as_dyn_ir_db());
         DebugWithDb::fmt(self.data(db), f, self_in_ir_db)
     }
 }
 
-impl InIrDb<'_, Bir> {
+impl InIrDb<'_, Bir<'_>> {
     fn tables(&self) -> &Tables {
         &self.data(self.db()).tables
     }
 }
 
-impl Bir {
+impl<'db> Bir<'db> {
     /// Given a `syntax_node` within this BIR, find its span. This operation
     /// is to be avoided unless reporting a diagnostic or really needed, because
     /// it induces a dependency on the *precise span* of the expression and hence
@@ -90,7 +90,7 @@ pub struct BirData {
     pub start_point: ControlPoint,
 }
 
-impl DebugWithDb<InIrDb<'_, Bir>> for BirData {
+impl DebugWithDb<InIrDb<'_, Bir<'_>>> for BirData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>, db: &InIrDb<'_, Bir>) -> std::fmt::Result {
         let mut dbg = f.debug_struct("bir::Bir");
         dbg.field("start_point", &self.start_point);
@@ -146,8 +146,8 @@ tables! {
     /// Tables that store the bir for expr in the AST.
     /// You can use `tables[expr]` (etc) to access the bir.
     #[derive(Clone, Debug, PartialEq, Eq)]
-    pub struct Tables {
-        local_variables: alloc LocalVariable => LocalVariableData,
+    pub struct Tables<'db> {
+        local_variables: alloc LocalVariable => LocalVariableData<'db>,
         control_points: alloc ControlPoint => ControlPointData,
         exprs: alloc Expr => ExprData,
         places: alloc Place => PlaceData,
@@ -180,7 +180,7 @@ id!(
     pub struct ControlPoint
 );
 
-impl DebugWithDb<InIrDb<'_, Bir>> for ControlPoint {
+impl DebugWithDb<InIrDb<'_, Bir<'_>>> for ControlPoint {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>, _db: &InIrDb<'_, Bir>) -> std::fmt::Result {
         write!(f, "ControlPoint({})", u32::from(*self))
     }
@@ -201,7 +201,7 @@ pub enum ControlPointData {
     Terminator(TerminatorData),
 }
 
-impl DebugWithDb<InIrDb<'_, Bir>> for ControlPointData {
+impl DebugWithDb<InIrDb<'_, Bir<'_>>> for ControlPointData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>, db: &InIrDb<'_, Bir>) -> std::fmt::Result {
         match self {
             ControlPointData::Statement(s) => s.fmt(f, db),
@@ -212,7 +212,7 @@ impl DebugWithDb<InIrDb<'_, Bir>> for ControlPointData {
 
 id!(pub struct LocalVariable);
 
-impl DebugWithDb<InIrDb<'_, Bir>> for LocalVariable {
+impl DebugWithDb<InIrDb<'_, Bir<'_>>> for LocalVariable {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>, db: &InIrDb<'_, Bir>) -> std::fmt::Result {
         let id = u32::from(*self);
         let bir = self.data(db.tables());
@@ -222,11 +222,11 @@ impl DebugWithDb<InIrDb<'_, Bir>> for LocalVariable {
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Hash, Debug)]
-pub struct LocalVariableData {
+pub struct LocalVariableData<'db> {
     /// Name given to this variable by the user.
     /// If it is None, then this is a temporary
     /// introduced by the compiler.
-    pub name: Option<Word>,
+    pub name: Option<Word<'db>>,
 
     pub atomic: Atomic,
 }

@@ -75,7 +75,7 @@ pub fn keywords(db: &dyn crate::Db) -> &Map<Word, Keyword> {
 
 // Hack to make a global constant
 #[salsa::interned]
-pub struct Keywords {}
+pub struct Keywords<'db> {}
 
 #[salsa::tracked(return_ref)]
 pub(crate) fn keywords_map(db: &dyn crate::Db, _k: Keywords) -> Map<Word, Keyword> {

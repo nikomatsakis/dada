@@ -7,7 +7,7 @@ use crate::{token_tree::TokenTree, word::Word};
 #[customize(DebugWithDb)]
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[allow(clippy::len_without_is_empty)]
-pub struct FormatString {
+pub struct FormatString<'db> {
     pub len: u32,
 
     /// List of sections from a string like `"foo{bar}baz" -- that example would
@@ -30,7 +30,7 @@ impl salsa::DebugWithDb<dyn crate::Db + '_> for FormatString {
 
 #[salsa::interned]
 #[customize(DebugWithDb)]
-pub struct FormatStringSection {
+pub struct FormatStringSection<'db> {
     pub data: FormatStringSectionData,
 }
 

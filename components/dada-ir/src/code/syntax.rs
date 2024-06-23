@@ -47,7 +47,7 @@ pub enum GenericParameter {
 /// It maps more-or-less directly to what the user typed.
 #[salsa::tracked]
 #[customize(DebugWithDb)]
-pub struct Tree {
+pub struct Tree<'db> {
     /// Identifies the root expression in the function body.
     #[return_ref]
     pub data: TreeData,

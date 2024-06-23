@@ -7,9 +7,9 @@ use crate::{
 
 #[salsa::tracked]
 #[customize(DebugWithDb)]
-pub struct Class {
+pub struct Class<'db> {
     #[id]
-    pub name: Word,
+    pub name: Word<'db>,
 
     pub input_file: InputFile,
 
@@ -20,20 +20,20 @@ pub struct Class {
     pub span: Span,
 }
 
-impl Class {
+impl<'db> Class<'db> {
     pub fn name_span(self, db: &dyn crate::Db) -> Span {
         let signature = self.signature_syntax(db);
         signature.spans[signature.name]
     }
 }
 
-impl Anchored for Class {
+impl<'db> Anchored for Class<'db> {
     fn input_file(&self, db: &dyn crate::Db) -> InputFile {
         Class::input_file(*self, db)
     }
 }
 
-impl<Db: ?Sized + crate::Db> salsa::DebugWithDb<Db> for Class {
+impl<'db, Db: ?Sized + crate::Db> salsa::DebugWithDb<Db> for Class<'db> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>, _db: &Db) -> std::fmt::Result {
         std::fmt::Debug::fmt(self, f)
     }

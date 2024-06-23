@@ -62,11 +62,13 @@ macro_rules! id {
             }
         }
 
-        impl salsa::AsId for $n {
-            fn as_id(self) -> salsa::Id {
+        impl salsa::id::AsId for $n {
+            fn as_id(&self) -> salsa::Id {
                 self.0
             }
+        }
 
+        impl salsa::id::FromId for $n {
             fn from_id(id: salsa::Id) -> Self {
                 Self(id)
             }
@@ -230,12 +232,12 @@ macro_rules! tables {
 
 pub trait InternValue {
     type Table;
-    type Key: salsa::AsId;
+    type Key: salsa::id::AsId;
 
     fn add(self, table: &mut Self::Table) -> Self::Key;
 }
 
-pub trait InternKey: salsa::AsId + 'static {
+pub trait InternKey: salsa::id::AsId + 'static {
     type Table;
     type Value;
 

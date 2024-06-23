@@ -13,7 +13,7 @@ use dada_ir::{
     token::Token,
     token_tree::TokenTree,
 };
-use salsa::AsId;
+use salsa::id::AsId;
 
 mod expr;
 mod items;

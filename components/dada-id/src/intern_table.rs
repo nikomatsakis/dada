@@ -1,16 +1,17 @@
 use dada_collections::IndexSet;
+use salsa::id::FromId;
 use std::{hash::Hash, marker::PhantomData};
 
 /// An individual interning table, where each unique thing added
 /// to the table gets a unique index, but adding the same thing
 /// twice gets the same index.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct InternTable<K: salsa::AsId, V: Hash + Eq> {
+pub struct InternTable<K: FromId, V: Hash + Eq> {
     map: IndexSet<V>,
     phantom: PhantomData<K>,
 }
 
-impl<K: salsa::AsId, V: Hash + Eq> Default for InternTable<K, V> {
+impl<K: FromId, V: Hash + Eq> Default for InternTable<K, V> {
     fn default() -> Self {
         Self {
             map: IndexSet::default(),
@@ -18,7 +19,7 @@ impl<K: salsa::AsId, V: Hash + Eq> Default for InternTable<K, V> {
         }
     }
 }
-impl<K: salsa::AsId, V: Hash + Eq> InternTable<K, V> {
+impl<K: FromId, V: Hash + Eq> InternTable<K, V> {
     pub fn new() -> Self {
         Self::default()
     }
@@ -35,7 +36,7 @@ impl<K: salsa::AsId, V: Hash + Eq> InternTable<K, V> {
     }
 }
 
-impl<K: salsa::AsId, V: Hash + Eq> std::ops::Index<K> for InternTable<K, V> {
+impl<K: FromId, V: Hash + Eq> std::ops::Index<K> for InternTable<K, V> {
     type Output = V;
 
     fn index(&self, key: K) -> &Self::Output {
