@@ -232,7 +232,7 @@ dependencies = [
  "dada-ir",
  "dada-parse",
  "extension-trait",
- "salsa",
+ "salsa 0.1.0",
 ]
 
 [[package]]
@@ -246,7 +246,7 @@ dependencies = [
  "dada-parse",
  "dada-validate",
  "extension-trait",
- "salsa",
+ "salsa 0.1.0",
  "tracing",
 ]
 
@@ -259,7 +259,7 @@ dependencies = [
  "dada-lex",
  "dada-parse",
  "dada-validate",
- "salsa",
+ "salsa 0.1.0",
 ]
 
 [[package]]
@@ -284,7 +284,7 @@ dependencies = [
  "dada-lex",
  "dada-parse",
  "dada-validate",
- "salsa",
+ "salsa 0.1.0",
 ]
 
 [[package]]
@@ -295,7 +295,7 @@ dependencies = [
  "dada-collections",
  "dada-ir",
  "eyre",
- "salsa",
+ "salsa 0.1.0",
 ]
 
 [[package]]
@@ -319,7 +319,7 @@ dependencies = [
  "generational-arena",
  "html-escape",
  "parking_lot 0.12.1",
- "salsa",
+ "salsa 0.1.0",
  "thiserror",
  "tracing",
  "typed-arena",
@@ -330,7 +330,7 @@ name = "dada-id"
 version = "0.1.0"
 dependencies = [
  "dada-collections",
- "salsa",
+ "salsa 0.1.0",
 ]
 
 [[package]]
@@ -341,7 +341,7 @@ dependencies = [
  "dada-id",
  "derive-new",
  "eq-float",
- "salsa",
+ "salsa 0.1.0",
  "tracing",
 ]
 
@@ -365,7 +365,7 @@ dependencies = [
  "lsp-types",
  "parking_lot 0.12.1",
  "regex",
- "salsa",
+ "salsa 0.1.0",
  "serde",
  "serde_json",
  "similar",
@@ -384,7 +384,7 @@ dependencies = [
  "dada-collections",
  "dada-ir",
  "extension-trait",
- "salsa",
+ "salsa 0.1.0",
  "tracing",
 ]
 
@@ -400,7 +400,7 @@ dependencies = [
  "eyre",
  "lsp-server",
  "lsp-types",
- "salsa",
+ "salsa 0.1.0",
  "serde",
  "serde_json",
  "threadpool",
@@ -414,7 +414,7 @@ dependencies = [
  "dada-ir",
  "dada-lex",
  "extension-trait",
- "salsa",
+ "salsa 0.1.0",
  "tracing",
 ]
 
@@ -431,7 +431,7 @@ dependencies = [
  "eq-float",
  "extension-trait",
  "itertools",
- "salsa",
+ "salsa 0.1.0",
  "tracing",
 ]
 
@@ -451,7 +451,7 @@ dependencies = [
  "dada-lsp",
  "eyre",
  "parking_lot 0.11.2",
- "salsa",
+ "salsa 0.1.0",
  "tracing",
  "tracing-wasm",
  "wasm-bindgen",
@@ -924,9 +924,9 @@ dependencies = [
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.79"
+version = "1.0.86"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e835ff2298f5721608eb1a980ecaee1aef2c132bf95ecc026a11b7bf3c01c02e"
+checksum = "5e719e8df665df0d1c8fbfd238015744736151d4445ec0836b8e628aae103b77"
 dependencies = [
  "unicode-ident",
 ]
@@ -991,13 +991,13 @@ checksum = "4501abdff3ae82a1c1b477a17252eb69cee9e66eb915c1abaa4f44d873df9f09"
 name = "salsa"
 version = "0.1.0"
 dependencies = [
- "salsa-2022",
+ "salsa 0.18.0",
 ]
 
 [[package]]
-name = "salsa-2022"
-version = "0.1.0"
-source = "git+https://github.com/salsa-rs/salsa/?branch=master#f5aec4abefb4c5e67cba6d8ea91c216bc2838f10"
+name = "salsa"
+version = "0.18.0"
+source = "git+https://github.com/salsa-rs/salsa/?branch=master#f706aa2d32d473ee633a77c1af01d180c85da308"
 dependencies = [
  "arc-swap",
  "crossbeam",
@@ -1008,20 +1008,21 @@ dependencies = [
  "log",
  "parking_lot 0.12.1",
  "rustc-hash",
- "salsa-2022-macros",
+ "salsa-macros",
  "smallvec",
 ]
 
 [[package]]
-name = "salsa-2022-macros"
-version = "0.1.0"
-source = "git+https://github.com/salsa-rs/salsa/?branch=master#f5aec4abefb4c5e67cba6d8ea91c216bc2838f10"
+name = "salsa-macros"
+version = "0.18.0"
+source = "git+https://github.com/salsa-rs/salsa/?branch=master#f706aa2d32d473ee633a77c1af01d180c85da308"
 dependencies = [
  "eyre",
  "heck 0.4.1",
  "proc-macro2",
  "quote",
- "syn 1.0.99",
+ "syn 2.0.67",
+ "synstructure",
 ]
 
 [[package]]
@@ -1164,13 +1165,24 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "2.0.58"
+version = "2.0.67"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "44cfb93f38070beee36b3fef7d4f5a16f27751d94b187b666a5cc5e9b0d30687"
+checksum = "ff8655ed1d86f3af4ee3fd3263786bc14245ad17c4c7e85ba7187fb3ae028c90"
 dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
+]
+
+[[package]]
+name = "synstructure"
+version = "0.13.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c8af7666ab7b6390ab78131fb5b0fce11d6b7a6951602017c35fa82800708971"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.67",
 ]
 
 [[package]]
@@ -1717,5 +1729,5 @@ checksum = "9ce1b18ccd8e73a9321186f97e46f9f04b778851177567b1975109d26a08d2a6"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.58",
+ "syn 2.0.67",
 ]
