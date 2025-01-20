@@ -307,6 +307,7 @@ fn name_resolution_to_sym_perm<'db>(db: &'db dyn crate::Db, name_resolution: Nam
     }
 }
 
+#[boxed_async_fn]
 async fn paths_to_sym_places<'db>(env: &Env<'db>, paths: &[AstPath<'db>]) -> Vec<SymPlace<'db>> {
     let mut places = vec![];
     for &path in paths {
@@ -315,6 +316,7 @@ async fn paths_to_sym_places<'db>(env: &Env<'db>, paths: &[AstPath<'db>]) -> Vec
     places
 }
 
+#[boxed_async_fn]
 async fn path_to_sym_place<'db>(env: &Env<'db>, path: AstPath<'db>) -> SymPlace<'db> {
     let db = env.db();
     let ExprResult { temporaries, span, kind } = path_to_expr_result(env, path).await;

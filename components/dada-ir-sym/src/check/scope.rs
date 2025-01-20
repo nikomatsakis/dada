@@ -6,16 +6,16 @@ use dada_ir_ast::{
     inputs::Krate,
     span::{Span, Spanned},
 };
-use dada_util::{indirect, FromImpls};
+use dada_util::{FromImpls, boxed_async_fn, indirect};
 
 use crate::{
-    check::{scope_tree::ScopeTreeNode, CheckInEnv},
+    check::{CheckInEnv, scope_tree::ScopeTreeNode},
     ir::{
         binder::BoundTerm,
         classes::{SymAggregate, SymClassMember},
         functions::SymFunction,
         module::SymModule,
-        primitive::{primitives, SymPrimitive},
+        primitive::{SymPrimitive, primitives},
         types::{SymGenericKind, SymGenericTerm},
         variables::{FromVar, SymVariable},
     },
@@ -60,14 +60,10 @@ impl<'scope, 'db> Scope<'scope, 'db> {
     /// Crates can define a module named `prelude`.
     fn with_prelude(self, db: &'db dyn crate::Db, span: Span<'db>, crate_source: Krate) -> Self {
         let prelude_id = Identifier::prelude(db);
-        match resolve_name_against_crate(
-            db,
-            crate_source,
-            SpannedIdentifier {
-                id: prelude_id,
-                span,
-            },
-        ) {
+        match resolve_name_against_crate(db, crate_source, SpannedIdentifier {
+            id: prelude_id,
+            span,
+        }) {
             Ok(NameResolutionSym::SymModule(sym)) => self.with_link(ScopeChainKind::SymModule(sym)),
             Ok(sym) => {
                 let span = sym.span(db).unwrap_or(span);
@@ -330,6 +326,7 @@ impl<'db> NameResolution<'db> {
     }
 
     /// Attempts to resolve generic argments like `foo[u32]`.    
+    #[boxed_async_fn]
     pub(crate) async fn resolve_relative_generic_args(
         mut self,
         env: &Env<'db>,

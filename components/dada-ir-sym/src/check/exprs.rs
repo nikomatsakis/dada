@@ -1217,6 +1217,7 @@ impl<'db> Err<'db> for ExprResult<'db> {
 
 impl<'db> ExprResult<'db> {
     /// Create a result based on lexical name resolution.
+    #[boxed_async_fn]
     pub async fn from_name_resolution(
         env: &Env<'db>,
         res: NameResolution<'db>,
